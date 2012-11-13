@@ -2,7 +2,7 @@ TESTS=
 check_PROGRAMS=			${TESTS}
 lib_LTLIBRARIES=		libserialdata.la
 serialdatadir=			${includedir}/serialdata
-serialdata_HEADERS=		serialdatawriter.h
+serialdata_HEADERS=		serialdatawriter.h serialdatareader.h
 
 libserialdata_la_SOURCES=	serialdatareader.cc serialdatawriter.cc	\
 				blockhead.pb.cc

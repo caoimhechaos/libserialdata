@@ -27,11 +27,92 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <QtCore/QByteArray>
+#include <QtCore/QFile>
+#include <QtCore/QString>
+
 #include <exception>
+#include <zlib.h>
+
+#include "serialdatareader.h"
+#include "blockhead.pb.h"
 
 namespace serialdata
 {
 
+SerialDataReader::SerialDataReader(QString file)
+	throw (SerialDataReaderException)
+: path_(file), handle_(file)
+{
+	if (!handle_.open(QIODevice::ReadOnly))
+		throw new SerialDataReaderException("Unable to open " +
+				file.toStdString() + ": " +
+				handle_.errorString().toStdString());
+}
 
+SerialDataReader::~SerialDataReader() noexcept (true)
+{
+	handle_.close();
+}
+
+QByteArray
+SerialDataReader::ReadRecord() throw (SerialDataReaderException)
+{
+	SerialDataBlockHead bh;
+	QByteArray ra_data = handle_.peek(512);
+
+	if (!bh.ParseFromArray(ra_data.constData(), ra_data.length()))
+		throw new SerialDataReaderException("Data not in blockhead "
+				"format or too long!");
+
+	if (!handle_.seek(handle_.pos() + bh.ByteSize()))
+		throw new SerialDataReaderException("Unable to seek to data: "
+				+ handle_.errorString().toStdString());
+
+	ra_data = handle_.read(bh.block_length());
+	if (ra_data.length() != bh.block_length())
+		throw new SerialDataReaderException("Unable to read data: " +
+				handle_.errorString().toStdString());
+
+	if (bh.has_checksum())
+	{
+		uint32_t state = 0UL;
+
+		crc32(state, (unsigned char*) ra_data.constData(),
+			       	ra_data.length());
+
+		if (state != bh.checksum())
+			throw new SerialDataReaderException(
+					"Data corrupted (CRC32 mismatch)");
+	}
+
+	return ra_data;
+}
+
+template<class T>
+SerialMessageReader<T>::SerialMessageReader(QString file)
+	throw (SerialDataReaderException)
+: sr_(file)
+{
+}
+
+template<class T>
+SerialMessageReader<T>::~SerialMessageReader() throw ()
+{
+}
+
+template<class T>
+T&
+SerialMessageReader<T>::ReadRecord() throw (SerialDataReaderException)
+{
+	QByteArray ba = sr_.ReadRecord();
+	T msg;
+
+	if (!msg.ParseFromArray(ba.constData(), ba.length()))
+		throw new SerialDataReaderException("Data not in requested "
+				"format!");
+
+	return msg;
+}
 
 }  // namespace serialdata
