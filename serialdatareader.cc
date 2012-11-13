@@ -85,6 +85,10 @@ SerialDataReader::ReadRecord() throw (SerialDataReaderException)
 	SerialDataBlockHead bh;
 	QByteArray ra_data = handle_.peek(512);
 
+	if (ra_data.length() <= 0)
+		throw new SerialDataReaderException("Unable to read header: "
+				+ handle_.errorString().toStdString());
+
 	if (!bh.ParseFromArray(ra_data.constData(), ra_data.length()))
 		throw new SerialDataReaderException("Data not in blockhead "
 				"format or too long!");

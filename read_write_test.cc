@@ -15,40 +15,43 @@ class ReadWriteTest : public ::testing::Test
 {
 };
 
+TEST_F(ReadWriteTest, SimpleReaderTest)
+{
+	QByteArray ba;
+	SerialDataReader reader("testdata/vicky.ser");
+	EXPECT_NO_THROW(ba = reader.ReadRecord());
+	EXPECT_EQ("hey vicky!", std::string(ba.constData()));
+}
+
 TEST_F(ReadWriteTest, WriteDataTempFileAndReadBack)
 {
 	QTemporaryFile tf;
 	QByteArray ba("test string one");
 	tf.open();
 	tf.close();
-	SerialDataWriter writer(tf.fileName());
+	SerialDataWriter* writer = new SerialDataWriter(tf.fileName());
 
-	writer.WriteData(ba);
+	writer->WriteData(ba);
 
 	ba.clear();
 	ba.append("test string two");
-	writer.WriteData(ba);
+	writer->WriteData(ba);
 
 	ba.clear();
 	ba.append("test string three");
-	writer.WriteData(ba);
+	writer->WriteData(ba);
+	delete writer;
 
 	ba.clear();
-	try {
-		SerialDataReader reader(tf.fileName());
-		ba = reader.ReadRecord();
-		EXPECT_EQ("test string one", std::string(ba.constData()));
+	SerialDataReader reader(tf.fileName());
+	EXPECT_NO_THROW(ba = reader.ReadRecord());
+	EXPECT_EQ("test string one", std::string(ba.constData()));
 
-		ba = reader.ReadRecord();
-		EXPECT_EQ("test string two", std::string(ba.constData()));
+	EXPECT_NO_THROW(ba = reader.ReadRecord());
+	EXPECT_EQ("test string two", std::string(ba.constData()));
 
-		ba = reader.ReadRecord();
-		EXPECT_EQ("test string three", std::string(ba.constData()));
-	}
-       	catch (SerialDataReaderException* ex)
-       	{
-		GTEST_FAIL() << ex->String().toStdString();
-	}
+	EXPECT_NO_THROW(ba = reader.ReadRecord());
+	EXPECT_EQ("test string three", std::string(ba.constData()));
 }
 
 }  // namespace testing
