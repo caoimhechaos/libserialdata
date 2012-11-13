@@ -39,6 +39,30 @@
 
 namespace serialdata
 {
+SerialDataReaderException::SerialDataReaderException(const std::string& msg)
+: msg_(msg.c_str())
+{
+}
+
+SerialDataReaderException::~SerialDataReaderException() noexcept (true) {
+}
+
+QString
+SerialDataReaderException::String() throw ()
+{
+	return msg_;
+}
+
+SerialDataReaderCorruptionException::SerialDataReaderCorruptionException(
+		const std::string& msg)
+: SerialDataReaderException(msg)
+{
+}
+
+SerialDataReaderCorruptionException::~SerialDataReaderCorruptionException()
+noexcept (true)
+{
+}
 
 SerialDataReader::SerialDataReader(QString file)
 	throw (SerialDataReaderException)
