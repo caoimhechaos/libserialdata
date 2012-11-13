@@ -82,7 +82,7 @@ SerialDataReader::ReadRecord() throw (SerialDataReaderException)
 			       	ra_data.length());
 
 		if (state != bh.checksum())
-			throw new SerialDataReaderException(
+			throw new SerialDataReaderCorruptionException(
 					"Data corrupted (CRC32 mismatch)");
 	}
 

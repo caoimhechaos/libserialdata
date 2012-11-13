@@ -36,21 +36,55 @@ namespace serialdata
 class SerialDataReaderException : public std::exception
 {
 public:
+	// Creates a new serial data reader exception with the reason
+	// given in "msg".
 	SerialDataReaderException(const std::string& msg);
+
+	// Exception destructor. Whatever.
 	virtual ~SerialDataReaderException() noexcept (true);
 
-	QString String();
+	// Return the reason string of the exception.
+	QString String() throw ();
 
 protected:
 	QString msg_;
 };
 
+class SerialDataReaderCorruptionException : public SerialDataReaderException
+{
+public:
+	// Creates the new exception indicating data corruption has
+	// been discovered. "msg" is set to a string saying just that.
+	SerialDataReaderCorruptionException(const std::string& msg);
+
+	// Exception destructor. Whatever.
+	virtual ~SerialDataReaderCorruptionException() noexcept (true);
+};
+
+// Reader for chunks of data which need to be kept in specified
+// lengths. Typically, the chunks would be protocol buffers, but it can
+// be any arbitrary-length byte field.
 class SerialDataReader
 {
 public:
+	// Create a new serial data reader reading from "file". If
+	// "file" cannot be opened, a SerialDataReaderException will
+	// be thrown.
 	SerialDataReader(QString file) throw (SerialDataReaderException);
+
+	// Close the file and end the reader. This will lose all state
+	// on where in the file you were reading.
 	virtual ~SerialDataReader() throw ();
 
+	// Read the next record in byte form. This does not attempt to
+	// decode anything. The amount of bytes returned will be exactly the
+	// amount of bytes written originally.
+	//
+	// If no data is available, returns an empty QByteArray.
+	// If the file could not be read, throws a
+	// SerialDataReaderException.
+	// If the data does not match the CRC32 checksum, a
+	// SerialDataReaderCorruptionException is thrown.
 	QByteArray ReadRecord() throw (SerialDataReaderException);
 
 protected:
@@ -58,13 +92,20 @@ protected:
 	QFile handle_;
 };
 
+// Proxy class for SerialDataReader to automatically decode protocol
+// buffer messages.
 template <class T>
 class SerialMessageReader
 {
 public:
+	// See the constructor of SerialDataReader.
 	SerialMessageReader(QString file) throw (SerialDataReaderException);
+
+	// See the destructor of SerialDataReader.
 	virtual ~SerialMessageReader() throw ();
 
+	// Read the next protocol buffer of type "T" which can be
+	// found in the input file.
 	T& ReadRecord() throw (SerialDataReaderException);
 
 protected:

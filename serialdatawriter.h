@@ -36,10 +36,15 @@ namespace serialdata
 class SerialDataWriterException : public std::exception
 {
 public:
+	// Create a new serial data writer exception with the reason
+	// given in "msg".
 	SerialDataWriterException(const std::string& msg);
+
+	// Exception destructor. Whatever.
 	virtual ~SerialDataWriterException() noexcept (true);
 
-	QString String();
+	// Return the reason string of the exception.
+	QString String() throw ();
 
 private:
 	QString msg_;
@@ -48,14 +53,36 @@ private:
 class SerialDataWriter
 {
 public:
+	// Create a new serial data writer writing into "file". If the
+	// file cannot be opened, throws a SerialDataWriterException.
+	// If the file exists, new content will be appended to it.
 	SerialDataWriter(QString file) throw (SerialDataWriterException);
+
+	// Close the file and stop writing. Writing can be resumed at any
+	// time by opening the file again.
 	virtual ~SerialDataWriter() throw ();
 
+	// Write the protocol buffer message "rec" into the file, including
+	// the identifying header so it can be read out again.
 	void WriteRecord(const google::protobuf::Message* rec)
 		throw (SerialDataWriterException);
+
+	// Writes the "data" into the file, prepending it with a nice
+	// header for easier handling. The header is completely
+	// invisible to the user of this library.
+	//
+	// The reader will return exactly the amount of bytes put into
+	// this method. No concatenation will be done.
 	void WriteData(const QByteArray& data)
 		throw (SerialDataWriterException);
 
+	// Enable or disable CRC32 checksums for writing the file. If
+	// checksums are enabled ("do_write_checksums" is set to
+	// true), the next records written will contain a checksum,
+	// otherwise they won't.
+	//
+	// Modifying this settings has no consequence whatsoever for
+	// the data which was already written to the file.
 	void SetWriteChecksums(bool do_write_checksums) throw ();
 
 private:

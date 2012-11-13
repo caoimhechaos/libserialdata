@@ -52,7 +52,7 @@ SerialDataWriterException::~SerialDataWriterException() noexcept (true)
 }
 
 QString
-SerialDataWriterException::String()
+SerialDataWriterException::String() throw ()
 {
 	return msg_;
 }
