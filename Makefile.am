@@ -4,9 +4,10 @@ lib_LTLIBRARIES=		libserialdata.la
 serialdatadir=			${includedir}/serialdata
 serialdata_HEADERS=		serialdatawriter.h serialdatareader.h
 
-libserialdata_la_SOURCES=	serialdatareader.cc serialdatawriter.cc	\
-				blockhead.pb.cc
+libserialdata_la_SOURCES=	blockhead.pb.cc serialdatareader.cc	\
+				serialdatawriter.cc
 libserialdata_la_LDFLAGS=	-version-info ${LIBRARY_VERSION}
+libserialdata_la_LIBADD=	${AC_LIBS}
 
 CLEANFILES=	blockhead.pb.cc blockhead.pb.h
 
