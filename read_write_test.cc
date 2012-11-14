@@ -3,7 +3,6 @@
 #include <QtCore/QString>
 #include <QtCore/QTemporaryFile>
 
-#include "blockhead.pb.h"
 #include "serialdatareader.h"
 #include "serialdatawriter.h"
 
@@ -21,6 +20,7 @@ TEST_F(ReadWriteTest, SimpleReaderTest)
 	SerialDataReader reader("testdata/vicky.ser");
 	EXPECT_NO_THROW(ba = reader.ReadRecord());
 	EXPECT_EQ("hey vicky!", std::string(ba.constData()));
+	EXPECT_THROW(ba = reader.ReadRecord(), SerialDataReaderException*);
 }
 
 TEST_F(ReadWriteTest, WriteDataTempFileAndReadBack)

@@ -30,6 +30,12 @@
 #ifndef SERIALDATA_SERIALDATAWRITER_H
 #define SERIALDATA_SERIALDATAWRITER_H 1
 
+namespace google {
+namespace protobuf {
+class Message;
+}  // namespace protobuf
+}  // namespace google
+
 namespace serialdata
 {
 

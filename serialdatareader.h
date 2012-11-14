@@ -85,7 +85,7 @@ public:
 	// SerialDataReaderException.
 	// If the data does not match the CRC32 checksum, a
 	// SerialDataReaderCorruptionException is thrown.
-	QByteArray ReadRecord() throw (SerialDataReaderException);
+	QByteArray ReadRecord();
 
 protected:
 	QString path_;

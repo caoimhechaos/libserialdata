@@ -31,11 +31,12 @@
 #include <QtCore/QFile>
 #include <QtCore/QString>
 
+#include <arpa/inet.h>
+
 #include <exception>
 #include <zlib.h>
 
 #include "serialdatareader.h"
-#include "blockhead.pb.h"
 
 namespace serialdata
 {
@@ -80,36 +81,39 @@ SerialDataReader::~SerialDataReader() noexcept (true)
 }
 
 QByteArray
-SerialDataReader::ReadRecord() throw (SerialDataReaderException)
+SerialDataReader::ReadRecord()
 {
-	SerialDataBlockHead bh;
-	QByteArray ra_data = handle_.peek(512);
+	QByteArray ra_data = handle_.read(8);
+	uint32_t length = 0UL;
+	uint32_t checksum = 0UL;
 
-	if (ra_data.length() <= 0)
+	if (ra_data.length() < 8)
 		throw new SerialDataReaderException("Unable to read header: "
 				+ handle_.errorString().toStdString());
 
-	if (!bh.ParseFromArray(ra_data.constData(), ra_data.length()))
-		throw new SerialDataReaderException("Data not in blockhead "
-				"format or too long!");
+	length = ntohl(*reinterpret_cast<const uint32_t*>(ra_data.constData()));
+	if (!length)
+		throw new SerialDataReaderException("Data has no length?");
+	if (length > handle_.size())
+		throw new SerialDataReaderException("Record length longer "
+				"than file");
 
-	if (!handle_.seek(handle_.pos() + bh.ByteSize()))
-		throw new SerialDataReaderException("Unable to seek to data: "
-				+ handle_.errorString().toStdString());
+	ra_data.remove(0, 4);
+	checksum = ntohl(*reinterpret_cast<const uint32_t*>(ra_data.constData()));
 
-	ra_data = handle_.read(bh.block_length());
-	if (ra_data.length() != bh.block_length())
+	ra_data = handle_.read(length);
+	if (ra_data.length() != length)
 		throw new SerialDataReaderException("Unable to read data: " +
 				handle_.errorString().toStdString());
 
-	if (bh.has_checksum())
+	if (checksum)
 	{
 		uint32_t state = 0UL;
 
 		crc32(state, (unsigned char*) ra_data.constData(),
 			       	ra_data.length());
 
-		if (state != bh.checksum())
+		if (state != checksum)
 			throw new SerialDataReaderCorruptionException(
 					"Data corrupted (CRC32 mismatch)");
 	}

@@ -32,9 +32,10 @@
 #include <QtCore/QFile>
 #include <QtCore/QString>
 
+#include <arpa/inet.h>
+
 #include <google/protobuf/message.h>
 
-#include "blockhead.pb.h"
 #include "serialdatawriter.h"
 
 #include <zlib.h>
@@ -77,21 +78,18 @@ void
 SerialDataWriter::WriteData(const QByteArray& data)
 	throw (SerialDataWriterException)
 {
-	SerialDataBlockHead bhead;
-
-	bhead.set_block_length(data.length());
+	uint32_t length = htonl(data.length());
+	uint32_t checksum = 0UL;
+	QByteArray writerdata(reinterpret_cast<char*>(&length), 4);
 
 	if (checksums_)
 	{
-		uint32_t state = 0UL;
+		crc32(checksum, (unsigned char*) data.constData(), data.length());
 
-		crc32(state, (unsigned char*) data.constData(), data.length());
-
-		bhead.set_checksum(state);
+		checksum = htonl(checksum);
 	}
 
-	std::string head = bhead.SerializeAsString();
-	QByteArray writerdata(head.c_str(), head.length());
+	writerdata.append(reinterpret_cast<char*>(&checksum), 4);
 	writerdata.append(data);
 
 	qint64 written = handle_.write(writerdata);
