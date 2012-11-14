@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.69])
+AC_PREREQ([2.63])
 AC_INIT([libserialdata], [0.2], [caoimhechaos@protonmail.com])
 AC_CONFIG_SRCDIR([serialdatareader.cc])
 AC_CONFIG_HEADERS([config.h])
