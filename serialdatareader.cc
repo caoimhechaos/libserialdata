@@ -81,8 +81,10 @@ SerialDataReader::~SerialDataReader() noexcept (true)
 }
 
 QByteArray
-SerialDataReader::ReadRecord()
+SerialDataReader::ReadRecord(int64_t* offset)
+	throw (SerialDataReaderException)
 {
+	int64_t off = handle_.pos();
 	QByteArray ra_data = handle_.read(8);
 	uint32_t length = 0UL;
 	uint32_t checksum = 0UL;
@@ -118,6 +120,9 @@ SerialDataReader::ReadRecord()
 					"Data corrupted (CRC32 mismatch)");
 	}
 
+	if (offset)
+		*offset = off;
+
 	return ra_data;
 }
 
@@ -135,9 +140,10 @@ SerialMessageReader<T>::~SerialMessageReader() throw ()
 
 template<class T>
 T&
-SerialMessageReader<T>::ReadRecord() throw (SerialDataReaderException)
+SerialMessageReader<T>::ReadRecord(int64_t* offset)
+	throw (SerialDataReaderException)
 {
-	QByteArray ba = sr_.ReadRecord();
+	QByteArray ba = sr_.ReadRecord(offset);
 	T msg;
 
 	if (!msg.ParseFromArray(ba.constData(), ba.length()))
