@@ -70,7 +70,7 @@ public:
 
 	// Write the protocol buffer message "rec" into the file, including
 	// the identifying header so it can be read out again.
-	void WriteRecord(const google::protobuf::Message* rec)
+	int64_t WriteRecord(const google::protobuf::Message* rec)
 		throw (SerialDataWriterException);
 
 	// Writes the "data" into the file, prepending it with a nice
@@ -79,7 +79,7 @@ public:
 	//
 	// The reader will return exactly the amount of bytes put into
 	// this method. No concatenation will be done.
-	void WriteData(const QByteArray& data)
+	int64_t WriteData(const QByteArray& data)
 		throw (SerialDataWriterException);
 
 	// Enable or disable CRC32 checksums for writing the file. If

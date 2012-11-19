@@ -74,10 +74,11 @@ SerialDataWriter::~SerialDataWriter() throw ()
 	handle_.close();
 }
 
-void
+int64_t
 SerialDataWriter::WriteData(const QByteArray& data)
 	throw (SerialDataWriterException)
 {
+	int64_t initial_offset = handle_.pos();
 	uint32_t length = htonl(data.length());
 	uint32_t checksum = 0UL;
 	QByteArray writerdata(reinterpret_cast<char*>(&length), 4);
@@ -96,16 +97,18 @@ SerialDataWriter::WriteData(const QByteArray& data)
 	if (written < data.length())
 		throw new SerialDataWriterException(
 				handle_.errorString().toStdString());
+
+	return initial_offset;
 }
 
-void
+int64_t
 SerialDataWriter::WriteRecord(const google::protobuf::Message* rec)
 	throw (SerialDataWriterException)
 {
 	std::string msg = rec->SerializeAsString();
 	QByteArray dest(msg.c_str(), msg.length());
 
-	WriteData(dest);
+	return WriteData(dest);
 }
 
 void
