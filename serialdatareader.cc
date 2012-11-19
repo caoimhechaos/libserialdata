@@ -125,6 +125,14 @@ SerialDataReader::ReadRecord(int64_t* offset)
 	return ra_data;
 }
 
+QByteArray
+SerialDataReader::ReadRecordAt(int64_t pos)
+{
+	if (!handle_.seek(pos))
+		throw new SerialDataReaderException("Invalid position");
+	return ReadRecord();
+}
+
 template<class T>
 SerialMessageReader<T>::SerialMessageReader(QString file)
 	throw (SerialDataReaderException)
@@ -142,6 +150,20 @@ T&
 SerialMessageReader<T>::ReadRecord(int64_t* offset)
 {
 	QByteArray ba = sr_.ReadRecord(offset);
+	T msg;
+
+	if (!msg.ParseFromArray(ba.constData(), ba.length()))
+		throw new SerialDataReaderException("Data not in requested "
+				"format!");
+
+	return msg;
+}
+
+template<class T>
+T&
+SerialMessageReader<T>::ReadRecordAt(int64_t pos)
+{
+	QByteArray ba = sr_.ReadRecordAt(pos);
 	T msg;
 
 	if (!msg.ParseFromArray(ba.constData(), ba.length()))

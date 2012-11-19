@@ -87,6 +87,10 @@ public:
 	// SerialDataReaderCorruptionException is thrown.
 	QByteArray ReadRecord(int64_t* offset = 0);
 
+	// Read the record at the position "pos". Otherwise, it behaves
+	// just like ReadRecord.
+	QByteArray ReadRecordAt(int64_t pos);
+
 protected:
 	QString path_;
 	QFile handle_;
@@ -108,6 +112,10 @@ public:
 	// found in the input file. If non-NULL, "offset" will be set to the
 	// offset of the record in the file.
 	T& ReadRecord(int64_t* offset = 0);
+
+	// Read the record at the position "pos". Otherwise, it behaves
+	// just like ReadRecord.
+	T& ReadRecordAt(int64_t pos);
 
 protected:
 	SerialDataReader sr_;
