@@ -82,7 +82,6 @@ SerialDataReader::~SerialDataReader() noexcept (true)
 
 QByteArray
 SerialDataReader::ReadRecord(int64_t* offset)
-	throw (SerialDataReaderException)
 {
 	int64_t off = handle_.pos();
 	QByteArray ra_data = handle_.read(8);
@@ -141,7 +140,6 @@ SerialMessageReader<T>::~SerialMessageReader() throw ()
 template<class T>
 T&
 SerialMessageReader<T>::ReadRecord(int64_t* offset)
-	throw (SerialDataReaderException)
 {
 	QByteArray ba = sr_.ReadRecord(offset);
 	T msg;

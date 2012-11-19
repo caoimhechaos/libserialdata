@@ -85,8 +85,7 @@ public:
 	// SerialDataReaderException.
 	// If the data does not match the CRC32 checksum, a
 	// SerialDataReaderCorruptionException is thrown.
-	QByteArray ReadRecord(int64_t* offset = 0)
-		throw (SerialDataReaderException);
+	QByteArray ReadRecord(int64_t* offset = 0);
 
 protected:
 	QString path_;
@@ -108,7 +107,7 @@ public:
 	// Read the next protocol buffer of type "T" which can be
 	// found in the input file. If non-NULL, "offset" will be set to the
 	// offset of the record in the file.
-	T& ReadRecord(int64_t* offset = 0) throw (SerialDataReaderException);
+	T& ReadRecord(int64_t* offset = 0);
 
 protected:
 	SerialDataReader sr_;
