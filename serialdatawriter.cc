@@ -97,6 +97,7 @@ SerialDataWriter::WriteData(const QByteArray& data)
 	if (written < data.length())
 		throw new SerialDataWriterException(
 				handle_.errorString().toStdString());
+	handle_.flush();
 
 	return initial_offset;
 }
