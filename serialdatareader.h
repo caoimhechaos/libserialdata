@@ -103,19 +103,38 @@ class SerialMessageReader
 {
 public:
 	// See the constructor of SerialDataReader.
-	SerialMessageReader(QString file) throw (SerialDataReaderException);
+	SerialMessageReader(QString file) throw (SerialDataReaderException)
+	: sr_(file) {}
 
 	// See the destructor of SerialDataReader.
-	virtual ~SerialMessageReader() throw ();
+	virtual ~SerialMessageReader() throw () {}
 
 	// Read the next protocol buffer of type "T" which can be
 	// found in the input file. If non-NULL, "offset" will be set to the
 	// offset of the record in the file.
-	T& ReadRecord(int64_t* offset = 0);
+	T& ReadRecord(int64_t* offset = 0)
+	{
+		QByteArray ba = sr_.ReadRecord(offset);
+		T msg;
+
+		if (!msg.ParseFromArray(ba.constData(), ba.length()))
+			throw new SerialDataReaderException("Data not in "
+					"requested format!");
+
+		return msg;
+	}
 
 	// Read the record at the position "pos". Otherwise, it behaves
 	// just like ReadRecord.
-	T& ReadRecordAt(int64_t pos);
+	T& ReadRecordAt(int64_t pos)
+	{
+		QByteArray ba = sr_.ReadRecordAt(pos);
+		T msg;
+
+		if (!msg.ParseFromArray(ba.constData(), ba.length()))
+			throw new SerialDataReaderException("Data not in "
+					"requested format!");
+	}
 
 protected:
 	SerialDataReader sr_;
