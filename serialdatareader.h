@@ -61,6 +61,17 @@ public:
 	virtual ~SerialDataReaderCorruptionException() noexcept (true);
 };
 
+class SerialDataReaderEndReachedException : public SerialDataReaderException
+{
+public:
+	// Creates the new exception indicating that the end of data has
+	// been reached.
+	SerialDataReaderEndReachedException();
+
+	// Exception destructor. Whatever.
+	virtual ~SerialDataReaderEndReachedException() noexcept (true);
+};
+
 // Reader for chunks of data which need to be kept in specified
 // lengths. Typically, the chunks would be protocol buffers, but it can
 // be any arbitrary-length byte field.

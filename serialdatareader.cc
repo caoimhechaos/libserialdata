@@ -65,6 +65,14 @@ noexcept (true)
 {
 }
 
+SerialDataReaderEndReachedException::SerialDataReaderEndReachedException()
+: SerialDataReaderException("End of data reached")
+{}
+
+SerialDataReaderEndReachedException::~SerialDataReaderEndReachedException()
+noexcept (true)
+{}
+
 SerialDataReader::SerialDataReader(QString file)
 	throw (SerialDataReaderException)
 : path_(file), handle_(file)
@@ -84,23 +92,34 @@ QByteArray
 SerialDataReader::ReadRecord(int64_t* offset)
 {
 	int64_t off = handle_.pos();
-	QByteArray ra_data = handle_.read(8);
+	QByteArray ra_data;
+	uint32_t lenbuf = 0UL;
 	uint32_t length = 0UL;
 	uint32_t checksum = 0UL;
+	qint64 rv;
 
-	if (ra_data.length() < 8)
+	if ((rv = handle_.read(reinterpret_cast<char*>(&lenbuf), 4)) == 0)
+		throw new SerialDataReaderEndReachedException();
+
+	if (rv < 0)
 		throw new SerialDataReaderException("Unable to read header: "
 				+ handle_.errorString().toStdString());
 
-	length = ntohl(*reinterpret_cast<const uint32_t*>(ra_data.constData()));
+	length = ntohl(lenbuf);
 	if (!length)
 		throw new SerialDataReaderException("Data has no length?");
 	if (length > handle_.size())
 		throw new SerialDataReaderException("Record length longer "
 				"than file");
 
-	ra_data.remove(0, 4);
-	checksum = ntohl(*reinterpret_cast<const uint32_t*>(ra_data.constData()));
+	if ((rv = handle_.read(reinterpret_cast<char*>(&lenbuf), 4)) == 0)
+		throw new SerialDataReaderEndReachedException();
+
+	if (rv < 0)
+		throw new SerialDataReaderException("Unable to read checksum: "
+				+ handle_.errorString().toStdString());
+
+	checksum = ntohl(lenbuf);
 
 	ra_data = handle_.read(length);
 	if (ra_data.length() != length)
