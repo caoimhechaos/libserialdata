@@ -145,6 +145,8 @@ public:
 		if (!msg.ParseFromArray(ba.constData(), ba.length()))
 			throw new SerialDataReaderException("Data not in "
 					"requested format!");
+
+		return msg;
 	}
 
 protected:
