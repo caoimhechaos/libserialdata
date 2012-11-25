@@ -52,6 +52,9 @@ TEST_F(ReadWriteTest, WriteDataTempFileAndReadBack)
 
 	EXPECT_NO_THROW(ba = reader.ReadRecord());
 	EXPECT_EQ("test string three", std::string(ba.constData()));
+
+	EXPECT_THROW(ba = reader.ReadRecord(),
+			serialdata::SerialDataReaderEndReachedException*);
 }
 
 }  // namespace testing
