@@ -40,10 +40,13 @@ GTEST_LIBS=""
 QT_LIBS=""
 AC_CHECK_LIB([z], [crc32],
 	     [AC_LIBS="$AC_LIBS -lz"])
-AC_CHECK_LIB([protobuf], [main],
-	     [AC_LIBS="$AC_LIBS -lprotobuf"])
 AC_CHECK_LIB([pthread], [pthread_once],
 	     [AC_LIBS="$AC_LIBS -lpthread"])
+ORIGLIBS="${LIBS}"
+LIBS="${LIBS} ${AC_LIBS}"
+AC_CHECK_LIB([protobuf], [main],
+	     [AC_LIBS="$AC_LIBS -lprotobuf"])
+LIBS="${ORIGLIBS}"
 AC_CHECK_LIB([gtest], [main],
 	     [GTEST_LIBS="$GTEST_LIBS -lgtest"])
 AC_CHECK_LIB([gtest_main], [main],
