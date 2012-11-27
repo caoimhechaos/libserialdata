@@ -40,6 +40,11 @@
 
 namespace serialdata
 {
+SerialDataReaderException::SerialDataReaderException(const QString& msg)
+: msg_(msg)
+{
+}
+
 SerialDataReaderException::SerialDataReaderException(const std::string& msg)
 : msg_(msg.c_str())
 {
@@ -66,7 +71,7 @@ noexcept (true)
 }
 
 SerialDataReaderEndReachedException::SerialDataReaderEndReachedException()
-: SerialDataReaderException("End of data reached")
+: SerialDataReaderException(QString("End of data reached"))
 {}
 
 SerialDataReaderEndReachedException::~SerialDataReaderEndReachedException()
@@ -79,8 +84,7 @@ SerialDataReader::SerialDataReader(QString file)
 {
 	if (!handle_.open(QIODevice::ReadOnly))
 		throw new SerialDataReaderException("Unable to open " +
-				file.toStdString() + ": " +
-				handle_.errorString().toStdString());
+				file + ": " + handle_.errorString());
 }
 
 SerialDataReader::~SerialDataReader() noexcept (true)
@@ -103,28 +107,26 @@ SerialDataReader::ReadRecord(int64_t* offset)
 
 	if (rv < 0)
 		throw new SerialDataReaderException("Unable to read header: "
-				+ handle_.errorString().toStdString());
+				+ handle_.errorString());
 
 	length = ntohl(lenbuf);
 	if (!length)
-		throw new SerialDataReaderException("Data has no length?");
-	if (length > handle_.size())
-		throw new SerialDataReaderException("Record length longer "
-				"than file");
+		throw new SerialDataReaderException(
+				QString("Data has no length?"));
 
 	if ((rv = handle_.read(reinterpret_cast<char*>(&lenbuf), 4)) == 0)
 		throw new SerialDataReaderEndReachedException();
 
 	if (rv < 0)
 		throw new SerialDataReaderException("Unable to read checksum: "
-				+ handle_.errorString().toStdString());
+				+ handle_.errorString());
 
 	checksum = ntohl(lenbuf);
 
 	ra_data = handle_.read(length);
 	if (ra_data.length() != length)
 		throw new SerialDataReaderException("Unable to read data: " +
-				handle_.errorString().toStdString());
+				handle_.errorString());
 
 	if (checksum)
 	{
@@ -135,7 +137,8 @@ SerialDataReader::ReadRecord(int64_t* offset)
 
 		if (state != checksum)
 			throw new SerialDataReaderCorruptionException(
-					"Data corrupted (CRC32 mismatch)");
+					std::string("Data corrupted (CRC32 "
+						"mismatch)"));
 	}
 
 	if (offset)
@@ -148,7 +151,8 @@ QByteArray
 SerialDataReader::ReadRecordAt(int64_t pos)
 {
 	if (!handle_.seek(pos))
-		throw new SerialDataReaderException("Invalid position");
+		throw new SerialDataReaderException(QString(
+					"Invalid position"));
 	return ReadRecord();
 }
 

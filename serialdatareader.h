@@ -38,6 +38,7 @@ class SerialDataReaderException : public std::exception
 public:
 	// Creates a new serial data reader exception with the reason
 	// given in "msg".
+	SerialDataReaderException(const QString& msg);
 	SerialDataReaderException(const std::string& msg);
 
 	// Exception destructor. Whatever.
@@ -129,8 +130,9 @@ public:
 		T msg;
 
 		if (!msg.ParseFromArray(ba.constData(), ba.length()))
-			throw new SerialDataReaderException("Data not in "
-					"requested format!");
+			throw new SerialDataReaderException(
+					QString("Data not in requested "
+						"format!"));
 
 		return msg;
 	}
@@ -143,8 +145,9 @@ public:
 		T msg;
 
 		if (!msg.ParseFromArray(ba.constData(), ba.length()))
-			throw new SerialDataReaderException("Data not in "
-					"requested format!");
+			throw new SerialDataReaderException(
+					QString("Data not in requested "
+						"format!"));
 
 		return msg;
 	}
